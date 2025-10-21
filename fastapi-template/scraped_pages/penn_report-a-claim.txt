@@ -1,0 +1,21 @@
+Report a Claim
+Report a Claim
+Complete the form below to submit a new insurance claim.
+All fields are required.
+Step 1
+Step 2
+Account Type
+Personal
+Commercial
+I am...
+Penn National Insurance Customer
+The person involved in a claim with a Penn National Insurance Customer
+Policy Number*
+(10 characters, no special)
+Company Name*
+Policyholder's Last Name*
+Policyholder's Zip Code*
+Terms & Conditions
+By checking this box, I am certifying that I am the insured for this policy or I have permission from the insured to submit this claim.
+I have read and agree to these terms and conditions
+Next
