@@ -1,0 +1,15 @@
+{                                                                                                                                                                 
+  "message": "To contact your agent, you can typically find their contact information on your insurance policy documents or on the insurance company's website. Yo
+u can also try calling the insurance company directly and asking to be connected to your agent. Additionally, some insurance companies have online portals where y
+ou can communicate with your agent through secure messaging. If you are unable to find your agent's contact information, you can reach out to the insurance compan
+y's customer service for assistance in getting in touch with your agent.",                                                                                        
+  "chunks": [                                                                                                                                                     
+    {                                                                                                                                                             
+      "text": "Your independent agent is there to help you make the right decision\nMaking such a personal decision about your options is yours, and yours alone u
+nder the law. Your independent insurance agent can help explain these options and provide you with information on these choices so that you can make informed deci
+sions.\nSource: International Risk Management Institute, Inc.\nI was able to speak with a live person immediately and I got a response quickly.\nRhonda\nFreeman, 
+Virginia",                                                                                                                                                        
+      "metadata": {                                                                                                                                               
+        "start_index": 3773,                                                                                                                                      
+        "source": "./scraped_pages/penn_auto-and-home_home-insurance_personal-umbrella.txt"                                                                       
+      },

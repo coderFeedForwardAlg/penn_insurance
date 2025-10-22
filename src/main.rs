@@ -276,9 +276,12 @@ pub async fn data_get_one_usersname(
 
 async fn python() -> Result<Json<Value>, (StatusCode, String)> {
     // Call the Python FastAPI service
+    let mut map = HashMap::new();// maybe user json! insted of map?? 
+    map.insert("message", "what is penn");
     let client = reqwest::Client::new();
     let res = client
-        .get("http://python:8003/chat")  // Use service name and correct port
+        .post("http://python:8003/chat")  // Use service name and correct port
+        .json(&map)
         .send()
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Request failed: {}", e)))?;
@@ -323,7 +326,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	.route("/get_one_usersname", get(get_one_usersname))
 	.route("/signed-urls/:video_path", get(get_signed_url))
 
-    .route("/python", get(python))
+    .route("/python", post(python))
     .layer(
         CorsLayer::new()
             .allow_origin(AllowOrigin::list(vec![

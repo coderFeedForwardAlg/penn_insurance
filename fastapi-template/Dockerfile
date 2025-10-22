@@ -22,6 +22,11 @@ COPY . .
 RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
 
 
+# bad code, need to fix
+RUN pip install --upgrade chromadb
+
+RUN pip install --upgrade chromadb
+
 USER app
 
 EXPOSE 8003
