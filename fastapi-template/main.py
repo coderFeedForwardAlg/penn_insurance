@@ -47,7 +47,7 @@ class ChatMessage(BaseModel):
 
 embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
 
-def query_similar_chunks_with_relevance(query: str, k: int = 5):
+def query_similar_chunks_with_relevance(query: str, k: int = 3):
     """Query the database for k most similar chunks with relevance scores (0-1)."""
     client = chromadb.PersistentClient(path="./chroma_langchain_db")
     print("Client:", client)
@@ -96,7 +96,7 @@ async def chat(message: ChatMessage) -> Dict[str, Any]:
             },
             json={
                 "model": "gpt-3.5-turbo",
-                "messages": [{"role": "user", "content": message.message + "\n\n" + "context from the penn national insurance website: " + str(similar_chunks)}]
+                "messages": [{"role": "user", "content": message.message + "\n\n" + "you are a insurance expert and you are given context from the penn national insurance website. Use this context to answer the question and give exact quotes whenever possible: " + str(similar_chunks)}]
             }
         )
         response.raise_for_status()

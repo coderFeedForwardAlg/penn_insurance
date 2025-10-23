@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 function App() {
   const [question, setQuestion] = useState('');
+  const [urls, setUrls] = useState([]);
   const [answer, setAnswer] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -27,8 +28,11 @@ function App() {
       }
 
       const data = await response.json();
-      console.log(data.payload.message);
       setAnswer(data.payload.message);
+      data.payload.chunks.map((chunk) => {
+        let url = "https://www.pennnationalinsurance.com/" + chunk.metadata.source.split("penn_")[1].split(".txt")[0].replaceAll("_", "/");
+        setUrls((prevUrls) => [...new Set([...prevUrls, url])]);
+      })
     } catch (error) {
       console.error('There was a problem with the fetch operation:', error);
       setAnswer('Sorry, something went wrong. Please try again later.');
@@ -81,6 +85,14 @@ function App() {
             >
               Ask New Question
             </button>
+		<p> urls where this info came from </p>
+		<ul>
+		{urls.map((url) => (
+			<li key={url}>
+			<a href={url}> {url} </a>
+			</li>
+		))}
+		</ul>
           </div>
         )}
       </div>
