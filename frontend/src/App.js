@@ -1,52 +1,89 @@
-import logo from './logo.svg';
 import './App.css';
 import { useState } from 'react';
 
 function App() {
-  const [apiStatus, setApiStatus] = useState('');
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const checkApiHealth = async () => {
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3002';
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!question.trim()) return;
+
+    setIsLoading(true);
+    setAnswer('');
+
     try {
-      const response = await fetch(`${apiUrl}/api/health`);
-      if (response.ok) {
-        const data = await response.text();
-        // The user said the endpoint should return 'healthy' or an error.
-        // We will check if the response body contains 'healthy'.
-        if (data.toLowerCase().includes('healthy')) {
-          setApiStatus('Backend API is healthy!');
-        } else {
-          setApiStatus(`Backend API is unhealthy. Response: ${data}`);
-        }
-      } else {
-        setApiStatus(`Error: Backend API returned status ${response.status}`);
+      const response = await fetch(`${process.env.REACT_APP_APIURL}/python`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: question }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
       }
+
+      const data = await response.json();
+      console.log(data.payload.message);
+      setAnswer(data.payload.message);
     } catch (error) {
-      console.error('Error checking API health:', error);
-      setApiStatus('Error: Could not connect to the backend API.');
+      console.error('There was a problem with the fetch operation:', error);
+      setAnswer('Sorry, something went wrong. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Click the button to check the backend API health.
-        </p>
-        <button onClick={checkApiHealth} className="App-button">
-          Check API Health
-        </button>
-        {apiStatus && <p>{apiStatus}</p>}
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+      <div className="container">
+        <h1>Penn National Insurance Assistant</h1>
+        <div className="form-group">
+          <label>Your Question</label>
+          <textarea 
+            className="question-input"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Type your question here..."
+            rows="4"
+            disabled={isLoading}
+          />
+        </div>
+	  {!answer && ( 
+        <button 
+          className="submit-button"
+          onClick={handleSubmit}
+          disabled={isLoading || !question.trim()}
         >
-          Learn React
-        </a>
-      </header>
+          {isLoading ? 'Processing...' : 'Get Answer'}
+        </button>
+	  )}
+        
+        <p className="helper-text">
+          Ask questions about Penn National Insurance policies and coverage options.
+        </p>
+        
+        {answer && (
+          <div className="response-container">
+            <label>Response:</label>
+            <div className="response-box">
+              {answer}
+            </div>
+            <button 
+              className="submit-button"
+              onClick={() => {
+                setQuestion('');
+                setAnswer('');
+              }}
+            >
+              Ask New Question
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

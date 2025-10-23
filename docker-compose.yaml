@@ -84,6 +84,8 @@ services:
   frontend:
     build:
       context: ./frontend
+    environment:
+      - REACT_APP_APIURL=http://localhost:3002/api
     depends_on:
       - app
 
