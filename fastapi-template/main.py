@@ -11,6 +11,12 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 import chromadb
 import uvicorn
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 
 load_dotenv()
 
@@ -45,12 +51,14 @@ class ChatResponse(BaseModel):
 class ChatMessage(BaseModel):
     message: str
 
-embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
-
-def query_similar_chunks_with_relevance(query: str, k: int = 3):
+def query_similar_chunks_with_relevance(query: str, k: int = 3, api_key: str = None):
     """Query the database for k most similar chunks with relevance scores (0-1)."""
     client = chromadb.PersistentClient(path="./chroma_langchain_db")
     print("Client:", client)
+    
+    # Initialize embeddings with the API key
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-large", openai_api_key=api_key)
+    
     try:
         vector_store = Chroma(
             collection_name="insurance_collection",
@@ -82,11 +90,15 @@ async def health_check() -> Dict[str, str]:
 
 @app.post("/chat")
 async def chat(message: ChatMessage) -> Dict[str, Any]:
+    logger.info("/chat being called")
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
+        logger.info("no api key")
         raise HTTPException(status_code=500, detail="OpenAI API key not configured")
     try:
-        similar_chunks = query_similar_chunks_with_relevance(message.message)
+        logger.info("trying to get chunks and hit open ai")
+        similar_chunks = query_similar_chunks_with_relevance(message.message, api_key=key)
+        logger.info("similar chunks: %s", similar_chunks)
         # print("Similar chunks:", similar_chunks)
         response = httpx.post(
             "https://api.openai.com/v1/chat/completions",
@@ -99,15 +111,18 @@ async def chat(message: ChatMessage) -> Dict[str, Any]:
                 "messages": [{"role": "user", "content": message.message + "\n\n" + "you are a insurance expert and you are given context from the penn national insurance website. Use this context to answer the question and give exact quotes whenever possible: " + str(similar_chunks)}]
             }
         )
+        logger.info("the raw response: %s", response)
         response.raise_for_status()
-        print("Response:", response.text)
+        logger.info("Response: %s", response.text)
         data = response.json()
-        print("Data:", data)
-        print("\n\n\n")
+        logger.info("Data: %s", data)
+        logger.info("\n\n\n")
         return { "message": data['choices'][0]['message']['content'], "chunks": similar_chunks}
     except httpx.HTTPStatusError as e:
+        logger.info("error with https")
         raise HTTPException(status_code=e.response.status_code, detail=str(e))
     except Exception as e:
+        logger.info("error with https but different ")
         raise HTTPException(status_code=500, detail=str(e))
 
 app.add_middleware(

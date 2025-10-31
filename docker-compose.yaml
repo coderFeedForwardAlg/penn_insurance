@@ -92,6 +92,8 @@ services:
   python:
     build:
       context: ./fastapi-template
+    env_file:
+      - ./.env
     depends_on:
       - app
     ports:
