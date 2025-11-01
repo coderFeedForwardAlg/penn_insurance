@@ -57,6 +57,7 @@ services:
   app:
     image: maxthemerman/penn_insurance:latest
     environment:
+      CORS_ORIGINS: ${CORS_ORIGINS}
       DATABASE_URL: "postgres://dbuser:p@db:5432/data"
       DATABASE_CONNECT_TIMEOUT: "30"
       SQLX_OFFLINE: "true"
@@ -73,8 +74,6 @@ services:
 
   frontend:
     image: maxthemerman/penn_insurance-frontend:latest
-    environment:
-      - REACT_APP_APIURL=http://localhost:3002/api
     depends_on:
       - app
 

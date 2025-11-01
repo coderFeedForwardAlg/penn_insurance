@@ -15,7 +15,7 @@ function App() {
     setAnswer('');
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_APIURL}/python`, {
+      const response = await fetch(`/python`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

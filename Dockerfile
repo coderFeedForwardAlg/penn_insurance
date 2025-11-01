@@ -1,4 +1,12 @@
 
+# Stage 1: Frontend builder
+FROM node:18-alpine AS frontend-builder
+WORKDIR /app/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
+
 # -----------------------------------------------------------------------------
 #  Multi-stage Dockerfile for "testing" Rust / Axum API (production)
 # -----------------------------------------------------------------------------
@@ -41,6 +49,7 @@ WORKDIR /app
 # Copy compiled binary & any runtime assets (e.g. migrations)
 COPY --from=builder /app/target/release/penn_insurance ./
 COPY --from=builder /app/migrations ./migrations
+COPY --from=frontend-builder /app/frontend/build ./frontend/build
 
 # Ensure the binary is executable
 RUN chown -R appuser:appuser /app && chmod +x /app/penn_insurance

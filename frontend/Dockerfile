@@ -3,13 +3,14 @@ FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Set the environment variable for the API URL
-ENV REACT_APP_APIURL=http://localhost:3002/api
 
 COPY package*.json ./
 
 # Using npm ci for clean installs in CI/CD environments
 RUN npm ci
+
+ARG REACT_APP_APIURL
+ENV REACT_APP_APIURL=$REACT_APP_APIURL
 
 COPY . .
 

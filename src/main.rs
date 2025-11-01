@@ -16,8 +16,9 @@ use std::sync::Arc;
 use axum::http::StatusCode;                  
 use sqlx::types::chrono::Utc; 
 use std::collections::HashMap;
-use tower_http::cors::{AllowOrigin, CorsLayer};
-use axum::http::Method;
+use tower_http::services::ServeDir;
+use axum::response::{Html, IntoResponse};
+use tower::service_fn;
 use reqwest;
 
 
@@ -317,26 +318,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Err(e) => eprintln!("Error applying migrations: {}", e),
     };
 
-    let app = Router::new()
-    .route("/health", get(health))
-    	.route("/add_users", post(add_users))
-	.route("/get_users", get(get_users))
-	.route("/get_one_usersuser_id", get(get_one_usersuser_id))
-	.route("/get_one_usersemail", get(get_one_usersemail))
-	.route("/get_one_usersname", get(get_one_usersname))
-	.route("/signed-urls/:video_path", get(get_signed_url))
+    let static_service = ServeDir::new("frontend/build")
+        .not_found_service(service_fn(|_req| async {
+            match tokio::fs::read_to_string("frontend/build/index.html").await {
+                Ok(body) => Ok((StatusCode::OK, Html(body)).into_response()),
+                Err(err) => Ok((
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Failed to read index.html: {}", err),
+                )
+                    .into_response()),
+            }
+        }));
 
-    .route("/python", post(python))
-    .layer(
-        CorsLayer::new()
-            .allow_origin(AllowOrigin::list(vec![
-                "http://localhost:3000".parse().unwrap(),
-                "https://example.com".parse().unwrap(),
-            ]))
-            .allow_methods([Method::GET, Method::POST])
-            .allow_headers(tower_http::cors::Any)
-    )
-        .with_state(pool);
+    let app = Router::new()
+        .route("/health", get(health))
+        .route("/add_users", post(add_users))
+        .route("/get_users", get(get_users))
+        .route("/get_one_usersuser_id", get(get_one_usersuser_id))
+        .route("/get_one_usersemail", get(get_one_usersemail))
+        .route("/get_one_usersname", get(get_one_usersname))
+        .route("/signed-urls/:video_path", get(get_signed_url))
+        .route("/python", post(python))
+        .with_state(pool)
+        .fallback_service(static_service);
+
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8081").await.unwrap();
 
@@ -376,8 +381,6 @@ async fn generate_signed_url(object_key: String) -> Result<String, anyhow::Error
         .map_err(|e| anyhow::anyhow!("Failed to generate presigned URL: {}", e))?;
     Ok(presigned_url)
 }
-    
-use axum::response::IntoResponse;
 
 async fn get_signed_url(
     Path(video_path): Path<String>,
